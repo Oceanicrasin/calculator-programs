@@ -11,33 +11,56 @@ def combination(n, k):
         n -= 1
     return numerator // denominator
 
-def binomialExpansion(firstPower, xNum, yNum):
+def parseFraction(value):
+    if "i" in value:
+        numerator, denominator = map(int, value.split("i"))
+        return numerator / denominator, (numerator, denominator)
+    return float(value), (int(value), 1)
 
+def simplifyFraction(numerator, denominator):
+    a, b = numerator, denominator
+    while b:
+        a, b = b, a % b
+    return numerator // a, denominator // a
+
+def formatFraction(value, fractionTuple):
+    numerator, denominator = simplifyFraction(fractionTuple[0], fractionTuple[1])
+    if denominator == 1:
+        return str(numerator)
+    return str(numerator) + "/" + str(denominator)
+
+def binomialExpansion(fPower, xCoeffStr, yCoeffStr):
     expansion = []
-    fPowerIncrement = firstPower
 
-    for secondPower in range(firstPower + 1):
-        coefficientMultiplier = combination(firstPower, secondPower)
-        coefficient = coefficientMultiplier * ((xNum**fPowerIncrement)*(yNum**secondPower))
-        fPowerIncrement -= 1
+    xCoeff, xFraction = parseFraction(xCoeffStr)
+    yCoeff, yFraction = parseFraction(yCoeffStr)
 
-        term = str(coefficient) + "x^" + str(firstPower - secondPower) + "*y^" + str(secondPower)
+    for secondPower in range(fPower + 1):
+        coefficientMultiplier = combination(fPower, secondPower)
 
-        if firstPower-secondPower == 0:
-            term = str(coefficient) + "y^" + str(secondPower)
+        coefficient = coefficientMultiplier * ((xCoeff**(fPower - secondPower))*(yCoeff**secondPower))
+
+        numerator = coefficientMultiplier * (xFraction[0] ** (fPower - secondPower)) * (yFraction[0] ** secondPower)
+        denominator = (xFraction[1] ** (fPower - secondPower)) * (yFraction[1] ** secondPower)
+        coefficientStr = formatFraction(coefficient, (numerator, denominator))
+
+        if fPower-secondPower == 0:
+            term = coefficientStr + "y^" + str(secondPower)
         elif secondPower == 0:
-            term = str(coefficient) + "x^" + str(firstPower)
-        elif firstPower-secondPower == 1:
-            term = str(coefficient) + "xy^" + str(secondPower)
+            term = coefficientStr + "x^" + str(fPower)
+        elif fPower-secondPower == 1:
+            term = coefficientStr + "xy^" + str(secondPower)
         elif secondPower == 1:
-            term = str(coefficient) + "x^" + str(firstPower - secondPower) + "*y"
+            term = coefficientStr + "x^" + str(fPower - secondPower) + "*y"
+        else:
+            term = coefficientStr + "x^" + str(fPower - secondPower) + "*y^" + str(secondPower)
         expansion.append(term)
 
     return " + ".join(expansion)
 
 
 firstPower = int(input("Enter the power you need to expand by: "))
-xNum = int(input("Enter the first number: "))
-yNum = int(input("Enter the second number: "))
+xNum = input("Enter the first number: ")
+yNum = input("Enter the second number: ")
 
 print(binomialExpansion(firstPower, xNum, yNum))
